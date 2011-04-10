@@ -5,70 +5,92 @@
 
 package asteroids;
 import processing.core.*;
+import java.util.AbstractList;
 
 /**
  *
  * @author zacstewart
  */
-public class Ship {
-    private PApplet parent;
-    private Float locationX;
-    private Float locationY;
-    private Float direction = (float) 90.0;
-    private Float speed = (float) 2.0;
+public class Ship extends SpaceThing {
     private boolean movingForward;
     private boolean movingBackward;
     private boolean rotatingLeft;
     private boolean rotatingRight;
+    private boolean shieldUp = true;
+    private Bullet[] bullets;
     
     public Ship(PApplet papp) {
-        parent = papp;
-        locationX = (float) parent.width/2;
-        locationY = (float) parent.height/2;
+        canvas = papp;
+        locationX = (float) canvas.width/2;
+        locationY = (float) canvas.height/2;
+        speed = (float) 3.0;
     }
 
     public void draw() {
-        parent.translate((float) 0.0, (float) 0.0);
-        parent.rotate(0);
-        parent.stroke(255);
-        parent.fill(255);
-        parent.text("Direction: " + direction, 0, 10);
-        parent.text("Location: (" + locationX + "," + locationY + ")", 0, 20);
-        parent.text("(0,0)", 10, 10);
-        parent.line(0, 0, 0, parent.height);
-        parent.line(0, 0, parent.width, 0);
+        canvas.stroke(255);
+        canvas.fill(255);
+//        canvas.text("Direction: " + direction, 0, 10);
+//        canvas.text("Location: (" + locationX + "," + locationY + ")", 0, 20);
 
-        if (movingForward) thrust();
+        if (movingForward) update();
         if (rotatingLeft) this.rotate((float) 1.0);
         if (rotatingRight) this.rotate((float) -1.0);
 
 
-        parent.translate(locationX, locationY);
-        parent.rectMode(parent.CENTER);
-        parent.rotate(parent.radians(direction));
-        parent.fill(0);
-        parent.triangle(0, -6, -5, 6, 5, 6);
-        if (movingForward) drawJet();
-        parent.translate(0, 0);
-        parent.rotate(0);
+        canvas.pushMatrix();
+        canvas.translate(locationX, locationY);
+        canvas.rectMode(canvas.CENTER);
+        canvas.rotate(canvas.radians(direction));
+        canvas.fill(0);
+        canvas.triangle(0, -6, -5, 6, 5, 6);
+        if (movingForward) {
 
+        }
+        if (movingForward) drawJet();
+        if (shieldUp) drawShield();
+        canvas.popMatrix();
+
+        if(bullets != null) {
+            for (Bullet bullet : bullets) {
+              if(bullet instanceof Bullet) {
+                  if(bullet.getDistance() >= canvas.width) {
+                      bullet.explode();
+                      bullet.draw();
+                      bullet = null;
+                  } else {
+                    bullet.draw();
+                  }
+               }
+           }
+        }
     }
 
     private float shipCos() {
-        return (float) parent.cos(parent.radians(direction));
+        return (float) canvas.cos(canvas.radians(direction));
     }
 
     private float shipSin() {
-        return (float) -parent.sin(parent.radians(direction));
+        return (float) canvas.sin(canvas.radians(direction));
     }
 
     private float shipAngle() {
-        return (float) parent.radians(direction);
+        return (float) canvas.radians(direction);
     }
 
     private void drawJet() {
-        parent.stroke(255,0,0);
-        parent.triangle(0, 10, -2, 6, 2, 6);
+        canvas.stroke(255,0,0);
+        canvas.triangle(0, 12, -2, 7, 2, 7);
+    }
+
+    public void drawShield() {
+        canvas.stroke(150,150,255);
+        canvas.noFill();
+        canvas.ellipse(0, 0+2, 35, 35);
+    }
+
+    private void rotate(Float angle) {
+        direction -= speed * angle;
+        direction = direction % 360;
     }
 
     public void setMovingForward(boolean moving) {
@@ -86,24 +108,19 @@ public class Ship {
         else rotatingRight = false;
     }
 
-    private void thrust() {
-        if((locationX += speed * parent.cos(parent.radians(direction-90))) > parent.width) {
-            locationX = (float) 0.0;
-        } else if ((locationX += speed * parent.cos(parent.radians(direction-90))) < 0) {
-            locationX = (float) parent.width;
-        } else {
-            locationX += speed * parent.cos(parent.radians(direction-90));
+    public void firePrimary() {
+        if(bullets == null) {
+            bullets = new Bullet[100];
         }
-        if((locationY += speed * parent.sin(parent.radians(direction-90))) > parent.width) {
-            locationY = (float) 0.0;
-        } else if((locationY += speed * parent.sin(parent.radians(direction-90))) < 0) {
-            locationY = (float) parent.height;
-        } else {
-            locationY += speed * parent.sin(parent.radians(direction-90));
+        for(int i=0; i<bullets.length; i++) {
+            
+            if(bullets[i] == null || bullets[i].isActive() != true) {
+                bullets[i] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction);
+                bullets[i].activate();
+                break;
+            }
         }
     }
 
-    private void rotate(Float angle) {
-        direction -= angle;
-    }
+
 }

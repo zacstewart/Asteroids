@@ -16,7 +16,8 @@ import javax.swing.*;
  */
 public class Main extends PApplet implements KeyListener, ActionListener {
 
-    Ship ship;
+    public Ship ship;
+    public Asteroid[] asteroids;
 
     /**
      * @param args the command line arguments
@@ -29,15 +30,23 @@ public class Main extends PApplet implements KeyListener, ActionListener {
     @Override
     public void setup() {
         size(600, 600);
-        background(10);
         rectMode(CENTER);
         ship = new Ship(this);
+        asteroids = new Asteroid[2];
+        for(int i=0; i<asteroids.length; i++) {
+            asteroids[i] = new Asteroid(this);
+        }
     }
 
     @Override
     public void draw() {
-        background(10);
+        background(10,10,100);
         ship.draw();
+        for(Asteroid asteroid : asteroids) {
+            if(asteroid instanceof Asteroid) {
+                asteroid.draw();
+           }
+        }
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -56,6 +65,9 @@ public class Main extends PApplet implements KeyListener, ActionListener {
                 break;
             case 39:
                 ship.setRotatingRight(true);
+                break;
+            case 32:
+                ship.firePrimary();
                 break;
             default:
                 break;
@@ -78,6 +90,8 @@ public class Main extends PApplet implements KeyListener, ActionListener {
                 break;
         }
     }
+
+
 
 
 }
