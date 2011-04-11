@@ -5,7 +5,7 @@
 
 package asteroids;
 import processing.core.*;
-import java.util.AbstractList;
+import java.util.ListIterator;
 
 /**
  *
@@ -19,15 +19,18 @@ public class Ship extends SpaceThing {
     private boolean shieldUp = true;
     private Bullet[] bullets;
     
-    public Ship(PApplet papp) {
+    public Ship(PApplet papp, ListIterator list) {
         canvas = papp;
+        li = list;
         locationX = (float) canvas.width/2;
         locationY = (float) canvas.height/2;
         speed = (float) 3.0;
     }
 
     public void draw() {
-        canvas.stroke(255);
+        System.out.println(explode);
+        if(explode) canvas.stroke(255, 0, 0);
+        else canvas.stroke(255);
         canvas.fill(255);
 //        canvas.text("Direction: " + direction, 0, 10);
 //        canvas.text("Location: (" + locationX + "," + locationY + ")", 0, 20);
@@ -50,19 +53,19 @@ public class Ship extends SpaceThing {
         if (shieldUp) drawShield();
         canvas.popMatrix();
 
-        if(bullets != null) {
-            for (Bullet bullet : bullets) {
-              if(bullet instanceof Bullet) {
-                  if(bullet.getDistance() >= canvas.width) {
-                      bullet.explode();
-                      bullet.draw();
-                      bullet = null;
-                  } else {
-                    bullet.draw();
-                  }
-               }
-           }
-        }
+//        if(bullets != null) {
+//            for (Bullet bullet : bullets) {
+//              if(bullet instanceof Bullet) {
+//                  if(bullet.getDistance() >= canvas.width) {
+//                      bullet.explode();
+//                      bullet.draw();
+//                      bullet = null;
+//                  } else {
+//                    bullet.draw();
+//                  }
+//               }
+//           }
+//        }
     }
 
     private float shipCos() {
@@ -110,13 +113,13 @@ public class Ship extends SpaceThing {
 
     public void firePrimary() {
         if(bullets == null) {
-            bullets = new Bullet[100];
+            bullets = new Bullet[10];
         }
         for(int i=0; i<bullets.length; i++) {
-            
             if(bullets[i] == null || bullets[i].isActive() != true) {
-                bullets[i] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction);
+                bullets[i] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, (movingForward ? speed : (float) 0.0));
                 bullets[i].activate();
+                li.add(bullets[i]);
                 break;
             }
         }

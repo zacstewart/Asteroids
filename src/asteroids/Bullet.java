@@ -13,15 +13,16 @@ import processing.core.*;
 public class Bullet extends SpaceThing {
 
     private float distance = (float) 0.0;
-    private float speed = (float) 3.0;
+    private float speed;
     private boolean active = false;
     private boolean explode = false;
 
-    public Bullet(PApplet papp, float x, float y, float angle) {
+    public Bullet(PApplet papp, float x, float y, float angle, float shipSpeed) {
         canvas = papp;
         locationX = x;
         locationY = y;
         direction = angle;
+        speed = (float) 3.0 + shipSpeed;
     }
 
     public void draw() {
@@ -39,6 +40,7 @@ public class Bullet extends SpaceThing {
         } else {
             canvas.stroke(0, 255,0);
             canvas.line(0, 0, 0, 6);
+            distance += speed;
             thrust();
         }
 

@@ -6,6 +6,7 @@
 package asteroids;
 import processing.core.*;
 import java.awt.*;
+import java.util.ListIterator;
 import java.util.Random;
 
 /**
@@ -19,9 +20,10 @@ public class Asteroid extends SpaceThing {
     int[] y;
     Random rand;
 
-    public Asteroid(PApplet papp) {
-        rand = new Random();
+    public Asteroid(PApplet papp, ListIterator list) {
         canvas = papp;
+        li = list;
+        rand = new Random();
         locationX = rand.nextInt(canvas.width);
         locationY = rand.nextInt(canvas.height);
         direction = rand.nextInt(360);
@@ -31,6 +33,7 @@ public class Asteroid extends SpaceThing {
     }
 
     public void draw() {
+        canvas.stroke(255);
         canvas.ellipse(locationX, locationY, size, size);
         update();
     }
