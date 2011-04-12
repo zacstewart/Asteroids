@@ -28,7 +28,6 @@ public class Ship extends SpaceThing {
     }
 
     public void draw() {
-        System.out.println(explode);
         if(explode) canvas.stroke(255, 0, 0);
         else canvas.stroke(255);
         canvas.fill(255);

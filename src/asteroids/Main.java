@@ -17,7 +17,7 @@ import java.util.ListIterator;
  *
  * @author zacstewart
  */
-public class Main extends PApplet implements KeyListener, ActionListener {
+public class Main extends PApplet {
     public Game game;
     public Ship ship;
     public Asteroid[] asteroids;
@@ -36,7 +36,6 @@ public class Main extends PApplet implements KeyListener, ActionListener {
     @Override
     public void setup() {
         game = new Game(this);
-        System.out.println(game.canvas);
         size(600, 600);
         rectMode(CENTER);
         game.createThing("ship");
@@ -78,10 +77,6 @@ public class Main extends PApplet implements KeyListener, ActionListener {
 //        monitorCollisions(spaceThings);
     }
 
-    public void actionPerformed(ActionEvent ae) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void monitorCollisions(List spaceThings) {
         ListIterator it1 = spaceThings.listIterator();
         while(it1.hasNext()) {
@@ -102,30 +97,22 @@ public class Main extends PApplet implements KeyListener, ActionListener {
         }
     }
 
-    @Override
+        @Override
     public void keyPressed(KeyEvent e) {
-//        System.out.println("key:" + e.getKeyCode());
-        game.control(e);
+        game.control("keyDown", e);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        switch(e.getKeyCode()) {
-            case 38:
-                ship.setMovingForward(false);
-                break;
-            case 37:
-                ship.setRotatingLeft(false);
-                break;
-            case 39:
-                ship.setRotatingRight(false);
-                break;
-            default:
-                break;
-        }
+        game.control("keyUp", e);
     }
 
+    public void keyTyped(KeyEvent ke) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-
+    public void actionPerformed(ActionEvent ae) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }
