@@ -4,8 +4,8 @@
  */
 
 package asteroids;
+import java.awt.geom.Rectangle2D;
 import processing.core.*;
-import java.util.ListIterator;
 
 /**
  *
@@ -16,24 +16,24 @@ public class Ship extends SpaceThing {
     private boolean movingBackward;
     private boolean rotatingLeft;
     private boolean rotatingRight;
-    private boolean shieldUp = true;
-    private Bullet[] bullets;
+    private Rectangle2D bounds;
     
-    public Ship(PApplet papp, ListIterator list) {
-        canvas = papp;
-        li = list;
+    public Ship(PApplet papp) {
+        super(papp);
         locationX = (float) canvas.width/2;
         locationY = (float) canvas.height/2;
+
         speed = (float) 3.0;
+        size = 6;
+        bounds = new Rectangle2D.Float(locationX, locationY, size/3*4, size*2);
     }
 
+    @Override
     public void draw() {
+        super.draw();
         if(explode) canvas.stroke(255, 0, 0);
         else canvas.stroke(255);
         canvas.fill(255);
-//        canvas.text("Direction: " + direction, 0, 10);
-//        canvas.text("Location: (" + locationX + "," + locationY + ")", 0, 20);
-
         if (movingForward) update();
         if (rotatingLeft) this.rotate((float) 1.0);
         if (rotatingRight) this.rotate((float) -1.0);
@@ -44,27 +44,10 @@ public class Ship extends SpaceThing {
         canvas.rectMode(canvas.CENTER);
         canvas.rotate(canvas.radians(direction));
         canvas.fill(0);
-        canvas.triangle(0, -6, -5, 6, 5, 6);
-        if (movingForward) {
-
-        }
+        canvas.triangle(0, -size, -size/3*2, size, size/3*2, size);
         if (movingForward) drawJet();
-        if (shieldUp) drawShield();
         canvas.popMatrix();
-
-//        if(bullets != null) {
-//            for (Bullet bullet : bullets) {
-//              if(bullet instanceof Bullet) {
-//                  if(bullet.getDistance() >= canvas.width) {
-//                      bullet.explode();
-//                      bullet.draw();
-//                      bullet = null;
-//                  } else {
-//                    bullet.draw();
-//                  }
-//               }
-//           }
-//        }
+        drawGhost();
     }
 
     private float shipCos() {
@@ -84,10 +67,12 @@ public class Ship extends SpaceThing {
         canvas.triangle(0, 12, -2, 7, 2, 7);
     }
 
-    public void drawShield() {
+    public void drawGhost() {
+        bounds.setRect(locationX, locationY, size/3*4, size*2);
         canvas.stroke(150,150,255);
         canvas.noFill();
-        canvas.ellipse(0, 0+2, 35, 35);
+        canvas.rect((float) bounds.getX(), (float) bounds.getY(),
+                (float) bounds.getWidth(), (float) bounds.getHeight());
     }
 
     private void rotate(Float angle) {
@@ -111,17 +96,19 @@ public class Ship extends SpaceThing {
     }
 
     public void firePrimary() {
-        if(bullets == null) {
-            bullets = new Bullet[10];
-        }
-        for(int i=0; i<bullets.length; i++) {
-            if(bullets[i] == null || bullets[i].isActive() != true) {
-                bullets[i] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, (movingForward ? speed : (float) 0.0));
-                bullets[i].activate();
-                li.add(bullets[i]);
-                break;
-            }
-        }
+        createable = new SpaceThing[1];
+        createable[0] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, (movingForward ? speed : (float) 0.0));
+    }
+
+    public Rectangle2D getBounds() {
+        return bounds;
+    }
+
+    public void explode() {
+        createable = new SpaceThing[2];
+        createable[0] = new Ship(canvas);
+        createable[1] = new Debris(canvas, locationX, locationY);
+        remove = true;
     }
 
 

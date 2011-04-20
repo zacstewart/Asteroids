@@ -18,18 +18,26 @@ public class Bullet extends SpaceThing {
     private boolean explode = false;
 
     public Bullet(PApplet papp, float x, float y, float angle, float shipSpeed) {
+        super(papp);
         canvas = papp;
         locationX = x;
         locationY = y;
         direction = angle;
         speed = (float) 3.0 + shipSpeed;
+        size = 1;
     }
 
     public void draw() {
+        super.draw();
         canvas.pushMatrix();
         canvas.translate(locationX, locationY);
         canvas.rectMode(canvas.CENTER);
         canvas.rotate(canvas.radians(direction));
+
+        if(distance >= canvas.width) {
+            explode = true;
+            remove = true;
+        }
 
         if(explode) {
             canvas.stroke(255, 0, 0);
@@ -78,6 +86,6 @@ public class Bullet extends SpaceThing {
 
     public void explode() {
         explode = true;
-        active = false;
+        remove = true;
     }
 }
