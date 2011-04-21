@@ -30,14 +30,10 @@ public class Main extends PApplet {
     @Override
     public void setup() {
 //        frameRate(60);
-//        smooth();
+        smooth();
         game = new Game(this);
         size(800, 600);
         rectMode(CENTER);
-        game.createThing("ship");
-        for(int i=0; i<3; i++) {
-            game.createThing("asteroid");
-        }
     }
 
     @Override

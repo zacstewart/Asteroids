@@ -16,7 +16,6 @@ public class Ship extends SpaceThing {
     private boolean movingBackward;
     private boolean rotatingLeft;
     private boolean rotatingRight;
-    private Rectangle2D bounds;
     
     public Ship(PApplet papp) {
         super(papp);
@@ -68,7 +67,7 @@ public class Ship extends SpaceThing {
     }
 
     public void drawGhost() {
-        bounds.setRect(locationX, locationY, size/3*4, size*2);
+        bounds.setRect(locationX, locationY, size*2, size*2);
         canvas.stroke(150,150,255);
         canvas.noFill();
         canvas.rect((float) bounds.getX(), (float) bounds.getY(),

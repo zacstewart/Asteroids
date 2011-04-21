@@ -26,6 +26,7 @@ public class Game {
     public int level;
     int asteroidsRemaining;
     public int shipsRemaining;
+    private int bulletsActive;
     /**
      *
      * @param papp Main PApplet of game.
@@ -33,16 +34,25 @@ public class Game {
      */
     public Game(PApplet papp) {
         canvas = papp;
+        newGame();
+    }
+
+    public void newGame() {
         spaceThings = new LinkedList();
         createables = new LinkedList();
         shipsRemaining = 3;
+        createThing("ship");
         initLevel(1);
     }
-    
+
+
+    /**
+     * Creates a level with newLeveL + 2 ships
+     * @param newLevel
+     */
     public void initLevel(int newLevel) {
         level = newLevel;
-//        createThing("ship");
-        for(int i=0; i<level; i++) {
+        for(int i=0; i<level+2; i++) {
             createThing("asteroid");
         }
     }
@@ -101,24 +111,32 @@ public class Game {
             Object x = li.next();
             if(x instanceof Ship) {
                 ship = (Ship) x;
-            } else if(x instanceof Asteroid) {
+            } else if (x instanceof Asteroid) {
                 asteroidsRemaining += 1;
             }
             if(x instanceof SpaceThing) {
                 SpaceThing s = (SpaceThing) x;
+                if(s.createable != null) {
+                    for(SpaceThing createable : s.createable) {
+                        if(!(createable instanceof Bullet) || bulletsActive < 3) {
+                            if(createable instanceof Bullet) {
+                                bulletsActive += 1;
+                            }
+                            createablesLi.add(createable);
+                        }
+                    }
+                    s.createable = null;
+                }
                 if (s.remove) {
                     if(s instanceof Ship) {
                         shipsRemaining -= 1;
                     }
+                    if(s instanceof Bullet) {
+                        bulletsActive -= 1;
+                    }
                     li.remove();
                 } else {
                     s.draw();
-                    if(s.createable != null) {
-                        for(SpaceThing createable : s.createable) {
-                            createablesLi.add(createable);
-                        }
-                        s.createable = null;
-                    }
 
                     SpaceThing collidingObject = getCollision(s);
                     if(collidingObject instanceof SpaceThing){
@@ -160,6 +178,13 @@ public class Game {
         }
     }
 
+
+    /**
+     * this is used to determine if there is an object at an given x, y pair.
+     * @param xPoint
+     * @param yPoint
+     * @return
+     */
     public boolean collisionsAtPoint(int xPoint, int yPoint) {
         Rectangle2D ghostShip = new Rectangle2D.Float(canvas.width/2, canvas.height/2, 20, 20);
         ListIterator it = spaceThings.listIterator();
@@ -187,7 +212,7 @@ public class Game {
         ListIterator it = spaceThings.listIterator();
         while(it.hasNext()) {
             Object x = it.next();
-            if(object instanceof Asteroid && x instanceof Ship) {
+            if(object instanceof Asteroid) {
                 if(((Asteroid) object).collides(x)) {
                     return (SpaceThing) x;
                 }

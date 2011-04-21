@@ -4,6 +4,7 @@
  */
 
 package asteroids;
+import java.awt.geom.Rectangle2D;
 import processing.core.*;
 
 /**
@@ -21,6 +22,7 @@ public class SpaceThing {
     float size;
     boolean explode = false;
     boolean remove = false;
+    protected Rectangle2D bounds;
 
     public SpaceThing(PApplet papp) {
         canvas = papp;
@@ -60,9 +62,8 @@ public class SpaceThing {
      */
 
     public void collide(SpaceThing other) {
-        System.out.println(this.toString() + " collides with " + other);
-        if (this instanceof Ship && other instanceof Asteroid) {
-            Ship s = (Ship) this;
+        if (this instanceof Asteroid && other instanceof Ship) {
+            Ship s = (Ship) other;
             s.explode();
         } else if (this instanceof Asteroid && other instanceof Bullet) {
             Asteroid a = (Asteroid) this;

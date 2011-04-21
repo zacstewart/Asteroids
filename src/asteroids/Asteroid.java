@@ -20,7 +20,7 @@ public class Asteroid extends SpaceThing {
     int[] x;
     int[] y;
     int[] avgLocation;
-    Random rand;
+    Random rand = new Random();
     Polygon poly;
 
     public Asteroid(PApplet papp, float initX, float initY, int initGeneration) {
@@ -34,6 +34,8 @@ public class Asteroid extends SpaceThing {
     public Asteroid(PApplet papp) {
         super(papp);
         generation = 3;
+        locationX = (float) rand.nextInt(canvas.width);
+        locationY = (float) rand.nextInt(canvas.height);
         init();
     }
     
@@ -56,7 +58,7 @@ public class Asteroid extends SpaceThing {
         x = new int[points];
         y = new int[points];
         for (int i=0; i<points; i++) {
-            x[i] = (int) ((locationX+ rand.nextInt(20)-10 + size
+            x[i] = (int) ((locationX + rand.nextInt(20)-10 + size
                     * PApplet.cos(PApplet.radians(360/points*i))));
             y[i] = (int) ((locationY + rand.nextInt(20)-10 + size
                     * PApplet.sin(PApplet.radians(360/points*i))));
@@ -66,22 +68,22 @@ public class Asteroid extends SpaceThing {
 
     @Override
     public void update() {
-        avgLocation = avgLocation();
+        bounds = poly.getBounds();
         int dx;
         int dy;
 
-        if(avgLocation[0] > canvas.width) {
+        if(bounds.getMinX() > canvas.width) {
             dx = -canvas.width;
-        } else if(avgLocation[0] < 0) {
-            dx = canvas.width;
+        } else if(bounds.getMaxX() < 0) {
+            dx = canvas.width + (int) bounds.getWidth();
         } else {
             dx = (int) (speed*deltaX());
         }
 
-        if(avgLocation[1] > canvas.height) {
+        if(bounds.getMinY() > canvas.height) {
             dy = -canvas.height;
-        } else if(avgLocation[1] < 0) {
-            dy = canvas.height;
+        } else if(bounds.getMaxY() < 0) {
+            dy = canvas.height + (int) bounds.getHeight();
         } else {
             dy = (int) (speed*deltaY());
         }
@@ -104,24 +106,8 @@ public class Asteroid extends SpaceThing {
     }
 
 
-    public int[] avgLocation() {
-        int sumX = 0;
-        int sumY = 0;
-        for(int i=0; i<poly.npoints; i++) {
-            sumX += poly.xpoints[i];
-            sumY += poly.ypoints[i];
-        }
-        int[] location = new int[2];
-        location[0] = sumX/poly.npoints;
-        location[1] = sumY/poly.npoints;
-        return location;
-    }
-
-
     /**
      * This checks for Asteroid collisions with Ships and Bullets.
-     * It does a terrible job of it, too. If I had more time I'd
-     * find a better intersect checker.
      * @param other
      * @return
      */
@@ -129,19 +115,15 @@ public class Asteroid extends SpaceThing {
         if(other instanceof Bullet && poly.contains(((Bullet) other).locationX, ((Bullet) other).locationY)) {
             return true;
         } else if (other instanceof Ship && poly.intersects(((Ship) other).getBounds())) {
-            color = canvas.color(255, 0, 255);
             return true;
         } else if (other instanceof Rectangle2D && poly.intersects(((Rectangle2D) other))) {
-            color = canvas.color(255, 0, 255);
             return true;
         } else {
-            color = canvas.color(255);
             return false;
         }
     }
 
     public boolean intersectsPoint(int xPoint, int yPoint) {
-        System.out.println("Checking asteroid at point " + xPoint + " " + yPoint);
         return poly.contains(xPoint, yPoint);
     }
 
@@ -149,15 +131,13 @@ public class Asteroid extends SpaceThing {
     public void explode() {
         if(generation > 1) {
             createable = new SpaceThing[2];
-            createable[0] = new Asteroid(
-                    canvas,
-                    avgLocation[0],
-                    avgLocation[1],
-                    generation-1);
-            createable[1] = new Asteroid(canvas,
-                    avgLocation[0],
-                    avgLocation[1],
-                    generation-1);
+            for(int i=0; i<createable.length; i++) {
+                createable[i] = new Asteroid(
+                        canvas,
+                        (int) bounds.getCenterX(),
+                        (int) bounds.getCenterY(),
+                        generation-1);
+            }
             remove = true;
         } else {
             remove = true;
