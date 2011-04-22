@@ -12,19 +12,19 @@ import processing.core.*;
  * @author zacstewart
  */
 public class Ship extends SpaceThing {
-    private boolean movingForward;
-    private boolean movingBackward;
+    private boolean accelerating;
     private boolean rotatingLeft;
     private boolean rotatingRight;
+    final float TOPSPEED = 4;
     
     public Ship(PApplet papp) {
         super(papp);
         locationX = (float) canvas.width/2;
         locationY = (float) canvas.height/2;
 
-        speed = (float) 3.0;
-        size = 6;
-        bounds = new Rectangle2D.Float(locationX, locationY, size/3*4, size*2);
+        speed = (float) 0.0;
+        size = 10;
+        bounds = new Rectangle2D.Float(locationX, locationY, size*2, size*2);
     }
 
     @Override
@@ -33,32 +33,62 @@ public class Ship extends SpaceThing {
         if(explode) canvas.stroke(255, 0, 0);
         else canvas.stroke(255);
         canvas.fill(255);
-        if (movingForward) update();
-        if (rotatingLeft) this.rotate((float) 1.0);
-        if (rotatingRight) this.rotate((float) -1.0);
+        if (rotatingLeft) this.rotate((float) 5.0);
+        if (rotatingRight) this.rotate((float) -5.0);
+        update();
 
 
         canvas.pushMatrix();
         canvas.translate(locationX, locationY);
-        canvas.rectMode(canvas.CENTER);
-        canvas.rotate(canvas.radians(direction));
+        canvas.rectMode(PApplet.CENTER);
+        canvas.rotate(PApplet.radians(direction));
         canvas.fill(0);
         canvas.triangle(0, -size, -size/3*2, size, size/3*2, size);
-        if (movingForward) drawJet();
+        if (accelerating) drawJet();
         canvas.popMatrix();
         drawGhost();
     }
 
+    @Override
+    public void update() {
+        super.update();
+        if(accelerating) {
+            if (speed < 4) {
+                speed += .1;
+            }
+            deltaX += PApplet.cos(PApplet.radians(direction-90)) * 0.1;
+            deltaY += PApplet.sin(PApplet.radians(direction-90)) * 0.1;
+        } else {
+            if(speed > 0) {
+                speed -= 0.01;
+            }
+        }
+        if(bounds.getMinX() > canvas.width) {
+            locationX = (float) 0.0;
+        } else if(bounds.getMaxX() < 0) {
+            locationX = (float) canvas.width;
+        } else {
+            locationX += deltaX;
+        }
+        if(bounds.getMinY() > canvas.height) {
+            locationY = (float) 0.0;
+        } else if(bounds.getMaxY() < 0) {
+            locationY = (float) canvas.height;
+        } else {
+            locationY += deltaY;
+        }
+    }
+
     private float shipCos() {
-        return (float) canvas.cos(canvas.radians(direction));
+        return (float) PApplet.cos(PApplet.radians(direction));
     }
 
     private float shipSin() {
-        return (float) canvas.sin(canvas.radians(direction));
+        return (float) PApplet.sin(PApplet.radians(direction));
     }
 
     private float shipAngle() {
-        return (float) canvas.radians(direction);
+        return (float) PApplet.radians(direction);
     }
 
     private void drawJet() {
@@ -66,22 +96,14 @@ public class Ship extends SpaceThing {
         canvas.triangle(0, 12, -2, 7, 2, 7);
     }
 
-    public void drawGhost() {
-        bounds.setRect(locationX, locationY, size*2, size*2);
-        canvas.stroke(150,150,255);
-        canvas.noFill();
-        canvas.rect((float) bounds.getX(), (float) bounds.getY(),
-                (float) bounds.getWidth(), (float) bounds.getHeight());
-    }
-
     private void rotate(Float angle) {
-        direction -= speed * angle;
+        direction -= angle;
         direction = direction % 360;
     }
 
-    public void setMovingForward(boolean moving) {
-        if(moving) movingForward = true;
-        else movingForward = false;
+    public void setAccelerating(boolean moving) {
+        if(moving) accelerating = true;
+        else accelerating = false;
     }
 
     public void setRotatingLeft(boolean rotating) {
@@ -96,11 +118,12 @@ public class Ship extends SpaceThing {
 
     public void firePrimary() {
         createable = new SpaceThing[1];
-        createable[0] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, (movingForward ? speed : (float) 0.0));
+        createable[0] = new Bullet(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, Math.abs(deltaX) + Math.abs(deltaY));
     }
 
-    public Rectangle2D getBounds() {
-        return bounds;
+    public void fireNuke() {
+        createable = new SpaceThing[1];
+        createable[0] = new Nuke(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, canvas.mouseX, canvas.mouseY);
     }
 
     public void explode() {

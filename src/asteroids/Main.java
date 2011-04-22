@@ -55,4 +55,9 @@ public class Main extends PApplet {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public void mousePressed() {
+        game.mouseControl();
+    }
+
 }

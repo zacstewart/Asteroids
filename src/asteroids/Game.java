@@ -22,11 +22,15 @@ public class Game {
     public List createables;
     public ListIterator li;
     public ListIterator createablesLi;
+    public int gameState;
     public Ship ship;
     public int level;
     int asteroidsRemaining;
     public int shipsRemaining;
     private int bulletsActive;
+    final int MENU = 0;
+    final int PLAYING = 1;
+    final int GAMEOVER = 2;
     /**
      *
      * @param papp Main PApplet of game.
@@ -34,7 +38,10 @@ public class Game {
      */
     public Game(PApplet papp) {
         canvas = papp;
-        newGame();
+    }
+
+    public void initMenu() {
+        gameState = MENU;
     }
 
     public void newGame() {
@@ -43,6 +50,13 @@ public class Game {
         shipsRemaining = 3;
         createThing("ship");
         initLevel(1);
+        gameState = PLAYING;
+    }
+
+    public void gameOver() {
+        spaceThings = null;
+        createables = null;
+        gameState = GAMEOVER;
     }
 
 
@@ -79,19 +93,51 @@ public class Game {
         li = spaceThings.listIterator();
         li.remove();
     }
-    
-
-
 
     public void draw() {
         asteroidsRemaining = 0;
         canvas.background(0);
-        loopList();
-        if(asteroidsRemaining <= 0) {
-            initLevel(level+1);
+        if (gameState == PLAYING) {
+            drawObjects();
+            drawHud();
+            if(asteroidsRemaining <= 0) {
+                initLevel(level+1);
+            }
+            if(shipsRemaining < 0) {
+                gameOver();
+            }
+        } else if (gameState == MENU) {
+            drawMenu();
+        } else if (gameState == GAMEOVER) {
+            drawGameOver();
         }
+    }
 
-        // This should go in a hud method
+    public void drawMenu() {
+        canvas.textAlign(PApplet.CENTER);
+        canvas.text("BAD ASTEROIDS", canvas.width/2, 40);
+
+        canvas.text("By Zac Stewart", canvas.width/2, 60);
+        canvas.text("zgstewart@gmail.com", canvas.width/2, 75);
+
+        canvas.text("Controls:", canvas.width/2, 105);
+        canvas.text("W - Accelerate", canvas.width/2, 125);
+        canvas.text("A - Rotate Left", canvas.width/2, 140);
+        canvas.text("D - Rotate Right", canvas.width/2, 155);
+        canvas.text("Space - Fire Primary", canvas.width/2, 170);
+
+        canvas.text("Press Enter to Begin", canvas.width/2, 200);
+
+    }
+
+    public void drawGameOver() {
+        canvas.text("GAME OVER", canvas.width/2, 40);
+
+        canvas.text("Insert Coins to Continue", canvas.width/2, 60);
+        canvas.text("Or Press Enter", canvas.width/2, 75);
+    }
+
+    public void drawHud() {
         canvas.stroke(255);
         canvas.fill(255);
         canvas.text("Level: " + level, 10, 20);
@@ -104,7 +150,7 @@ public class Game {
      * createable array to the object list and clears said array. Monitors
      * collisions via getCollision() and then enacts the appropriate collision.
      */
-    public void loopList() {
+    public void drawObjects() {
         li = spaceThings.listIterator();
         createablesLi = createables.listIterator();
         while(li.hasNext()) {
@@ -154,7 +200,6 @@ public class Game {
 
         insertCreateables();
     }
-
 
     /**
      * This loops through the createables and adds them to the object list.
@@ -229,38 +274,69 @@ public class Game {
      * @param e
      */
     public void control(String type, KeyEvent e) {
-        if(type.equals("keyDown")) {
-            switch(e.getKeyCode()) {
-                case 38:
-                    ship.setMovingForward(true);
-                    break;
-                case 37:
-                    ship.setRotatingLeft(true);
-                    break;
-                case 39:
-                    ship.setRotatingRight(true);
-                    break;
-                case 32:
-                    ship.firePrimary();
-                    break;
-                default:
-                    break;
+        System.out.println(e);
+        switch(gameState) {
+            case PLAYING: {
+                if(type.equals("keyDown")) {
+                    switch(e.getKeyCode()) {
+                        case 87:
+                            ship.setAccelerating(true);
+                            break;
+                        case 65:
+                            ship.setRotatingLeft(true);
+                            break;
+                        case 68:
+                            ship.setRotatingRight(true);
+                            break;
+                        case 32:
+                            ship.firePrimary();
+                            break;
+                        default:
+                            break;
+                    }
+                } else if(type.equals("keyUp")) {
+                    switch(e.getKeyCode()) {
+                        case 87:
+                            ship.setAccelerating(false);
+                            break;
+                        case 65:
+                            ship.setRotatingLeft(false);
+                            break;
+                        case 68:
+                            ship.setRotatingRight(false);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
             }
-        } else if(type.equals("keyUp")) {
-            switch(e.getKeyCode()) {
-                case 38:
-                    ship.setMovingForward(false);
-                    break;
-                case 37:
-                    ship.setRotatingLeft(false);
-                    break;
-                case 39:
-                    ship.setRotatingRight(false);
-                    break;
-                default:
-                    break;
+            case MENU: {
+                if(type.equals("keyDown")) {
+                    switch(e.getKeyCode()) {
+                        case 10:
+                            newGame();
+                    }
+                }
+                break;
+            }
+            case GAMEOVER: {
+                if(type.equals("keyDown")) {
+                    switch(e.getKeyCode()) {
+                        case 10:
+                            initMenu();
+                    }
+                }
+                break;
             }
         }
     }
 
+    public void mouseControl() {
+        switch(gameState) {
+            case PLAYING: {
+                ship.fireNuke();
+            }
+        }
+    }
 }

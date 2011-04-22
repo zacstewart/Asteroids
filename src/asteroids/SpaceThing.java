@@ -11,18 +11,20 @@ import processing.core.*;
  *
  * @author zacstewart
  */
-public class SpaceThing {
-    PApplet canvas;
-    int frame = 0;
-    SpaceThing[] createable;
-    float locationX;
-    float locationY;
-    float direction;
-    float speed;
-    float size;
-    boolean explode = false;
-    boolean remove = false;
+abstract class SpaceThing {
+    protected PApplet canvas;
+    protected int frame = 0;
+    protected SpaceThing[] createable;
+    protected float locationX;
+    protected float locationY;
+    protected float direction;
+    protected float deltaX;
+    protected float deltaY;
+    protected float speed;
+    protected float size;
     protected Rectangle2D bounds;
+    protected boolean explode = false;
+    boolean remove = false;
 
     public SpaceThing(PApplet papp) {
         canvas = papp;
@@ -37,23 +39,26 @@ public class SpaceThing {
     }
 
     public void draw() {
+        frame += 1;
     }
 
     public void update() {
-        if((locationX + deltaX()) > canvas.width) {
+        if(bounds.getMinX() > canvas.width) {
             locationX = (float) 0.0;
-        } else if((locationX + deltaX()) < 0) {
+        } else if(bounds.getMaxX() < 0) {
             locationX = (float) canvas.width;
         } else {
-            locationX += deltaX();
+            locationX += deltaX;
         }
-        if((locationY + speed * PApplet.sin(PApplet.radians(direction-90))) > canvas.height) {
+        if(bounds.getMinY() > canvas.height) {
             locationY = (float) 0.0;
-        } else if((locationY + speed * PApplet.sin(PApplet.radians(direction-90))) < 0) {
+        } else if(bounds.getMaxY() < 0) {
             locationY = (float) canvas.height;
         } else {
-            locationY += speed * PApplet.sin(PApplet.radians(direction-90));
+            locationY += deltaY;
         }
+
+        bounds.setRect(locationX, locationY, bounds.getWidth(), bounds.getHeight());
     }
 
     /**
@@ -63,17 +68,28 @@ public class SpaceThing {
 
     public void collide(SpaceThing other) {
         if (this instanceof Asteroid && other instanceof Ship) {
-            Ship s = (Ship) other;
-            s.explode();
+            ((Ship) other).explode();
         } else if (this instanceof Asteroid && other instanceof Bullet) {
-            Asteroid a = (Asteroid) this;
-            a.explode();
-            Bullet b = (Bullet) other;
-            b.explode();
+            ((Asteroid) this).explode();
+            ((Bullet) other).explode();
+        } else if (this instanceof Asteroid && other instanceof Nuke) {
+            ((Asteroid) this).explode();
+            ((Nuke) other).explode();
         }
     }
 
     public void explode() {
 
+    }
+
+    protected void drawGhost() {
+        canvas.stroke(150,150,255);
+        canvas.noFill();
+        canvas.rect((float) bounds.getX(), (float) bounds.getY(),
+                (float) bounds.getWidth(), (float) bounds.getHeight());
+    }
+
+    public Rectangle2D getBounds() {
+        return bounds;
     }
 }

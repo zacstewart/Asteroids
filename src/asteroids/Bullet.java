@@ -4,6 +4,7 @@
  */
 
 package asteroids;
+import java.awt.geom.Rectangle2D;
 import processing.core.*;
 
 /**
@@ -13,26 +14,27 @@ import processing.core.*;
 public class Bullet extends SpaceThing {
 
     private float distance = (float) 0.0;
-    private float speed;
     private boolean active = false;
-    private boolean explode = false;
 
-    public Bullet(PApplet papp, float x, float y, float angle, float shipSpeed) {
+    public Bullet(PApplet papp, float x, float y, float direction, float initSpeed) {
         super(papp);
-        canvas = papp;
         locationX = x;
         locationY = y;
-        direction = angle;
-        speed = (float) 3.0 + shipSpeed;
+        this.direction = direction;
+        this.speed = initSpeed + 6;
         size = 1;
+        bounds = new Rectangle2D.Float(locationX, locationY, size, size);
+        deltaX = PApplet.cos(PApplet.radians(direction-90)) * speed;
+        deltaY = PApplet.sin(PApplet.radians(direction-90)) * speed;
     }
 
+    @Override
     public void draw() {
         super.draw();
         canvas.pushMatrix();
         canvas.translate(locationX, locationY);
-        canvas.rectMode(canvas.CENTER);
-        canvas.rotate(canvas.radians(direction));
+        canvas.rectMode(PApplet.CENTER);
+        canvas.rotate(PApplet.radians(direction));
 
         if(distance >= canvas.width) {
             explode = true;
@@ -49,27 +51,16 @@ public class Bullet extends SpaceThing {
             canvas.stroke(0, 255,0);
             canvas.line(0, 0, 0, 6);
             distance += speed;
-            thrust();
+            update();
         }
 
         canvas.popMatrix();
     }
 
-    private void thrust() {
-        if((locationX + speed * canvas.cos(canvas.radians(direction-90))) > canvas.width) {
-            locationX = (float) 0.0;
-        } else if ((locationX + speed * canvas.cos(canvas.radians(direction-90))) < 0) {
-            locationX = (float) canvas.width;
-        } else {
-            locationX += speed * canvas.cos(canvas.radians(direction-90));
-        }
-        if((locationY + speed * canvas.sin(canvas.radians(direction-90))) > canvas.width) {
-            locationY = (float) 0.0;
-        } else if((locationY + speed * canvas.sin(canvas.radians(direction-90))) < 0) {
-            locationY = (float) canvas.height;
-        } else {
-            locationY += speed * canvas.sin(canvas.radians(direction-90));
-        }
+    @Override
+    public void update() {
+        distance += speed;
+        super.update();
     }
 
     public float getDistance() {

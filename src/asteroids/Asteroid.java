@@ -38,7 +38,12 @@ public class Asteroid extends SpaceThing {
         locationY = (float) rand.nextInt(canvas.height);
         init();
     }
-    
+
+    /**
+     * This determines the size of the asteroid, based on its 'generation'
+     * each one varies a little. Then, it generates 10-15 points for a
+     * polygon, each varying a little. Unique asteroids FTW!
+     */
     private void init() {
         rand = new Random();
         direction = rand.nextInt(360);
@@ -64,16 +69,22 @@ public class Asteroid extends SpaceThing {
                     * PApplet.sin(PApplet.radians(360/points*i))));
         }
         poly = new Polygon(x, y, points);
+
+        bounds = poly.getBounds();
     }
 
+    /**
+     * Here I translate the entire polygon according to its direction.
+     * when going of the screen at any side, it reappears on the opposite
+     * side.
+     */
     @Override
     public void update() {
-        bounds = poly.getBounds();
         int dx;
         int dy;
 
         if(bounds.getMinX() > canvas.width) {
-            dx = -canvas.width;
+            dx = -canvas.width - (int) bounds.getWidth();
         } else if(bounds.getMaxX() < 0) {
             dx = canvas.width + (int) bounds.getWidth();
         } else {
@@ -81,16 +92,20 @@ public class Asteroid extends SpaceThing {
         }
 
         if(bounds.getMinY() > canvas.height) {
-            dy = -canvas.height;
+            dy = -canvas.height - (int) bounds.getHeight();
         } else if(bounds.getMaxY() < 0) {
             dy = canvas.height + (int) bounds.getHeight();
         } else {
             dy = (int) (speed*deltaY());
         }
         poly.translate(dx, dy);
-        super.update();
+        bounds = poly.getBounds();
     }
 
+    /**
+     * This loops through all points on the polygon and draws them as
+     * a processing shape. Then it calls the update method.
+     */
     @Override
     public void draw() {
         super.draw();
@@ -114,7 +129,7 @@ public class Asteroid extends SpaceThing {
     public boolean collides(Object other) {
         if(other instanceof Bullet && poly.contains(((Bullet) other).locationX, ((Bullet) other).locationY)) {
             return true;
-        } else if (other instanceof Ship && poly.intersects(((Ship) other).getBounds())) {
+        } else if (other instanceof SpaceThing && poly.intersects(((SpaceThing) other).getBounds())) {
             return true;
         } else if (other instanceof Rectangle2D && poly.intersects(((Rectangle2D) other))) {
             return true;
@@ -134,8 +149,8 @@ public class Asteroid extends SpaceThing {
             for(int i=0; i<createable.length; i++) {
                 createable[i] = new Asteroid(
                         canvas,
-                        (int) bounds.getCenterX(),
-                        (int) bounds.getCenterY(),
+                        (float) bounds.getCenterX(),
+                        (float) bounds.getCenterY(),
                         generation-1);
             }
             remove = true;
