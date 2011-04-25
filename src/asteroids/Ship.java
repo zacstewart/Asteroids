@@ -11,11 +11,12 @@ import processing.core.*;
  *
  * @author zacstewart
  */
-public class Ship extends SpaceThing {
+class Ship extends SpaceThing {
     private boolean accelerating;
     private boolean rotatingLeft;
     private boolean rotatingRight;
-    final float TOPSPEED = 4;
+    private int nukes;
+    public int incShips;
     
     public Ship(PApplet papp) {
         super(papp);
@@ -29,13 +30,13 @@ public class Ship extends SpaceThing {
 
     @Override
     public void draw() {
+        update();
         super.draw();
         if(explode) canvas.stroke(255, 0, 0);
         else canvas.stroke(255);
         canvas.fill(255);
         if (rotatingLeft) this.rotate((float) 5.0);
         if (rotatingRight) this.rotate((float) -5.0);
-        update();
 
 
         canvas.pushMatrix();
@@ -43,10 +44,10 @@ public class Ship extends SpaceThing {
         canvas.rectMode(PApplet.CENTER);
         canvas.rotate(PApplet.radians(direction));
         canvas.fill(0);
+        canvas.stroke(200,200,255);
         canvas.triangle(0, -size, -size/3*2, size, size/3*2, size);
         if (accelerating) drawJet();
         canvas.popMatrix();
-        drawGhost();
     }
 
     @Override
@@ -79,6 +80,10 @@ public class Ship extends SpaceThing {
         }
     }
 
+    public int getNukes() {
+        return nukes;
+    }
+
     private float shipCos() {
         return (float) PApplet.cos(PApplet.radians(direction));
     }
@@ -93,7 +98,7 @@ public class Ship extends SpaceThing {
 
     private void drawJet() {
         canvas.stroke(255,0,0);
-        canvas.triangle(0, 12, -2, 7, 2, 7);
+        canvas.triangle(0, 16, -3, 10, 3, 10);
     }
 
     private void rotate(Float angle) {
@@ -122,15 +127,36 @@ public class Ship extends SpaceThing {
     }
 
     public void fireNuke() {
-        createable = new SpaceThing[1];
-        createable[0] = new Nuke(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, canvas.mouseX, canvas.mouseY);
+        if(nukes > 1) {
+            createable = new SpaceThing[1];
+            createable[0] = new Nuke(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, canvas.mouseX, canvas.mouseY);
+            nukes -= 1;
+        }
     }
 
+    public void fireNuke(SpaceThing target) {
+        if(nukes > 0) {
+            createable = new SpaceThing[1];
+            createable[0] = new Nuke(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, target);
+            nukes -= 1;
+        }
+    }
+
+    @Override
     public void explode() {
+        incShips = -1;
         createable = new SpaceThing[2];
         createable[0] = new Ship(canvas);
         createable[1] = new Debris(canvas, locationX, locationY);
         remove = true;
+    }
+
+    void addPowerUp(PowerUp powerUp) {
+        if (powerUp.getType() == NUKE) {
+            nukes += 1;
+        } else if (powerUp.getType() == SHIP) {
+            incShips = 1;
+        }
     }
 
 

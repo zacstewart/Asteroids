@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package asteroids;
 import processing.core.*;
 import java.awt.*;
@@ -11,7 +6,7 @@ import java.util.Random;
 
 /**
  *
- * @author zacstewart
+ * @author Zachary Stewart
  */
 public class Asteroid extends SpaceThing {
     int points;
@@ -110,8 +105,7 @@ public class Asteroid extends SpaceThing {
     public void draw() {
         super.draw();
         canvas.noFill();
-        if(explode) canvas.stroke(255,0,0);
-        else canvas.stroke(color);
+        canvas.stroke(color);
         canvas.beginShape();
         for(int i=0; i<poly.npoints; i++) {
             canvas.vertex(poly.xpoints[i], poly.ypoints[i]);
@@ -127,9 +121,11 @@ public class Asteroid extends SpaceThing {
      * @return
      */
     public boolean collides(Object other) {
-        if(other instanceof Bullet && poly.contains(((Bullet) other).locationX, ((Bullet) other).locationY)) {
+        if(other instanceof Bullet && poly.intersects(((Bullet) other).getBounds())) {
             return true;
-        } else if (other instanceof SpaceThing && poly.intersects(((SpaceThing) other).getBounds())) {
+        } else if ((other instanceof Nuke) && poly.intersects(((Nuke) other).getBounds())) {
+            return true;
+        } else if ((other instanceof Ship) && poly.intersects(((Ship) other).getBounds())) {
             return true;
         } else if (other instanceof Rectangle2D && poly.intersects(((Rectangle2D) other))) {
             return true;

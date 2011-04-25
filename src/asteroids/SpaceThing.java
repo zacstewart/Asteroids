@@ -1,15 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package asteroids;
 import java.awt.geom.Rectangle2D;
 import processing.core.*;
 
 /**
  *
- * @author zacstewart
+ * @author Zachary Stewart
  */
 abstract class SpaceThing {
     protected PApplet canvas;
@@ -22,9 +17,17 @@ abstract class SpaceThing {
     protected float deltaY;
     protected float speed;
     protected float size;
+    protected float distance = 0.0f;
     protected Rectangle2D bounds;
     protected boolean explode = false;
-    boolean remove = false;
+    protected boolean remove = false;
+    protected final int SHIP = 1;
+    protected final int ASTEROID = 2;
+    protected final int BULLET = 3;
+    protected final int NUKE = 4;
+    protected final int MENU = 0;
+    protected final int PLAYING = 1;
+    protected final int GAMEOVER = 2;
 
     public SpaceThing(PApplet papp) {
         canvas = papp;
@@ -39,6 +42,7 @@ abstract class SpaceThing {
     }
 
     public void draw() {
+//        drawGhost();
         frame += 1;
     }
 
@@ -75,11 +79,18 @@ abstract class SpaceThing {
         } else if (this instanceof Asteroid && other instanceof Nuke) {
             ((Asteroid) this).explode();
             ((Nuke) other).explode();
+        } else if (this instanceof PowerUp && other instanceof Ship) {
+            ((Ship) other).addPowerUp((PowerUp) this);
+            ((PowerUp) this).remove();
         }
     }
 
     public void explode() {
+        explode = true;
+    }
 
+    public void remove() {
+        remove = true;
     }
 
     protected void drawGhost() {

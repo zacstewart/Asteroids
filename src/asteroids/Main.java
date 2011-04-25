@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package asteroids;
 import processing.core.*;
 import java.awt.event.*;
@@ -10,7 +6,7 @@ import java.util.ListIterator;
 
 /**
  *
- * @author zacstewart
+ * @author Zachary Stewart
  */
 public class Main extends PApplet {
     public Game game;

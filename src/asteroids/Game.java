@@ -1,33 +1,44 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * ]Asteroids clone by Zachary Stewart
+ *
  */
 
 package asteroids;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Random;
 import processing.core.PApplet;
 
 /**
  *
  * This class will be used to create, update and monitor all game objects
  */
-public class Game {
-    public PApplet canvas;
-    public List spaceThings;
-    public List createables;
-    public ListIterator li;
-    public ListIterator createablesLi;
-    public int gameState;
-    public Ship ship;
-    public int level;
-    int asteroidsRemaining;
-    public int shipsRemaining;
+class Game {
+    private PApplet canvas;
+    private List spaceThings;
+    private List createables;
+    private ListIterator li;
+    private ListIterator createablesLi;
+    private SpaceThing target;
+    Random rand = new Random();
+    private int gameState;
+    private int frame;
+    private Ship ship;
+    private int level;
+    private int score;
+    private int asteroidsRemaining;
+    private int shipsRemaining;
     private int bulletsActive;
+    private int powerUps;
+    final int SHIP = 1;
+    final int ASTEROID = 2;
+    final int BULLET = 3;
+    final int NUKE = 4;
     final int MENU = 0;
     final int PLAYING = 1;
     final int GAMEOVER = 2;
@@ -48,7 +59,8 @@ public class Game {
         spaceThings = new LinkedList();
         createables = new LinkedList();
         shipsRemaining = 3;
-        createThing("ship");
+        score = 0;
+        createThing(SHIP);
         initLevel(1);
         gameState = PLAYING;
     }
@@ -67,7 +79,7 @@ public class Game {
     public void initLevel(int newLevel) {
         level = newLevel;
         for(int i=0; i<level+2; i++) {
-            createThing("asteroid");
+            createThing(ASTEROID);
         }
     }
 
@@ -76,12 +88,15 @@ public class Game {
      * object list.
      * @param thing type of SpaceThing. Ship, Asteroid or Bullet
      */
-    public void createThing(String thing) {
+    public void createThing(int thing) {
         li = spaceThings.listIterator();
-        if(thing.equals("ship")) {
-            li.add(new Ship(canvas));
-        } else if (thing.equals("asteroid")) {
-            li.add(new Asteroid(canvas));
+        switch(thing) {
+            case SHIP:
+                li.add(new Ship(canvas));
+                break;
+            case ASTEROID:
+                li.add(new Asteroid(canvas));
+                break;
         }
     }
 
@@ -95,7 +110,6 @@ public class Game {
     }
 
     public void draw() {
-        asteroidsRemaining = 0;
         canvas.background(0);
         if (gameState == PLAYING) {
             drawObjects();
@@ -126,11 +140,14 @@ public class Game {
         canvas.text("D - Rotate Right", canvas.width/2, 155);
         canvas.text("Space - Fire Primary", canvas.width/2, 170);
 
-        canvas.text("Press Enter to Begin", canvas.width/2, 200);
+        canvas.text("Use the mouse to target and fire nukes", canvas.width/2, 200);
+
+        canvas.text("Press enter to begin", canvas.width/2, 230);
 
     }
 
     public void drawGameOver() {
+        canvas.textAlign(PApplet.CENTER);
         canvas.text("GAME OVER", canvas.width/2, 40);
 
         canvas.text("Insert Coins to Continue", canvas.width/2, 60);
@@ -140,8 +157,12 @@ public class Game {
     public void drawHud() {
         canvas.stroke(255);
         canvas.fill(255);
+        canvas.textAlign(PApplet.LEFT);
         canvas.text("Level: " + level, 10, 20);
         canvas.text("Ships: " + shipsRemaining, 10, 40);
+        canvas.text("Nukes: " + ship.getNukes(), 10, 60);
+        canvas.textAlign(PApplet.RIGHT);
+        canvas.text("Score: " + score, canvas.width-10, 20);
     }
 
     /**
@@ -151,14 +172,28 @@ public class Game {
      * collisions via getCollision() and then enacts the appropriate collision.
      */
     public void drawObjects() {
+        frame += 1;
         li = spaceThings.listIterator();
         createablesLi = createables.listIterator();
+        asteroidsRemaining = 0;
+        powerUps = 0;
+        target = null;
         while(li.hasNext()) {
             Object x = li.next();
             if(x instanceof Ship) {
                 ship = (Ship) x;
+                shipsRemaining += ship.incShips;
+                ship.incShips = 0;
             } else if (x instanceof Asteroid) {
+                Point mousePos = canvas.getMousePosition();
+                if (mousePos != null) {
+                    if (((Asteroid) x).getBounds().contains(mousePos.x, mousePos.y)) {
+                        target = (SpaceThing) x;
+                    }
+                }
                 asteroidsRemaining += 1;
+            } else if (x instanceof PowerUp) {
+                powerUps += 1;
             }
             if(x instanceof SpaceThing) {
                 SpaceThing s = (SpaceThing) x;
@@ -174,11 +209,14 @@ public class Game {
                     s.createable = null;
                 }
                 if (s.remove) {
-                    if(s instanceof Ship) {
-                        shipsRemaining -= 1;
-                    }
-                    if(s instanceof Bullet) {
+                    if (s instanceof Ship) {
+                        shipsRemaining += ((Ship) s).incShips;
+                        ((Ship) s).incShips = 0;
+                        bulletsActive = 0;
+                    } else if (s instanceof Bullet) {
                         bulletsActive -= 1;
+                    } else if (s instanceof Asteroid) {
+                        score += 10;
                     }
                     li.remove();
                 } else {
@@ -198,6 +236,13 @@ public class Game {
             }
         }
 
+        // add powerups
+        if(frame % 100 == 0 && powerUps <= 0) {
+            int coinToss = rand.nextInt(2);
+            int type = (coinToss == 1 ? SHIP : NUKE);
+            li.add(new PowerUp(canvas, type));
+        }
+
         insertCreateables();
     }
 
@@ -212,7 +257,7 @@ public class Game {
         while(createablesLi.hasNext()) {
             Object createable = createablesLi.next();
             if(createable instanceof Ship) {
-                if(!collisionsAtPoint(canvas.width/2,canvas.height/2)) {
+                if(collisionAtPoint(canvas.width/2,canvas.height/2) == null) {
                     li.add(createable);
                     createablesLi.remove();
                 }
@@ -230,7 +275,7 @@ public class Game {
      * @param yPoint
      * @return
      */
-    public boolean collisionsAtPoint(int xPoint, int yPoint) {
+    public SpaceThing collisionAtPoint(int xPoint, int yPoint) {
         Rectangle2D ghostShip = new Rectangle2D.Float(canvas.width/2, canvas.height/2, 20, 20);
         ListIterator it = spaceThings.listIterator();
         while(it.hasNext()) {
@@ -238,11 +283,11 @@ public class Game {
             if(x instanceof Asteroid) {
                 Asteroid object = (Asteroid) x;
                 if(object.collides(ghostShip)) {
-                    return true;
+                    return object;
                 }
             }
         }
-        return false;
+        return null;
     }
 
 
@@ -262,6 +307,11 @@ public class Game {
                     return (SpaceThing) x;
                 }
             }
+            if(object instanceof PowerUp && x instanceof Ship) {
+                if(((PowerUp) object).collides((SpaceThing) x)) {
+                    return (SpaceThing) x;
+                }
+            }
         }
         return null;
     }
@@ -274,7 +324,7 @@ public class Game {
      * @param e
      */
     public void control(String type, KeyEvent e) {
-        System.out.println(e);
+//        System.out.println(e);
         switch(gameState) {
             case PLAYING: {
                 if(type.equals("keyDown")) {
@@ -335,7 +385,11 @@ public class Game {
     public void mouseControl() {
         switch(gameState) {
             case PLAYING: {
-                ship.fireNuke();
+                if(target != null) {
+                    ship.fireNuke(target);
+                } else {
+                    ship.fireNuke();
+                }
             }
         }
     }

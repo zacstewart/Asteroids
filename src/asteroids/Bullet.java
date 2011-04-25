@@ -11,9 +11,7 @@ import processing.core.*;
  *
  * @author zacstewart
  */
-public class Bullet extends SpaceThing {
-
-    private float distance = (float) 0.0;
+class Bullet extends SpaceThing {
     private boolean active = false;
 
     public Bullet(PApplet papp, float x, float y, float direction, float initSpeed) {
@@ -75,6 +73,7 @@ public class Bullet extends SpaceThing {
         return active;
     }
 
+    @Override
     public void explode() {
         explode = true;
         remove = true;
