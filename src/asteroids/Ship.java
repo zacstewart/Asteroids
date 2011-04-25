@@ -1,15 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package asteroids;
 import java.awt.geom.Rectangle2D;
 import processing.core.*;
 
 /**
  *
- * @author zacstewart
+ * @author Zachary Stewart
  */
 class Ship extends SpaceThing {
     private boolean accelerating;
