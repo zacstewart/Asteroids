@@ -7,6 +7,10 @@ import java.util.ListIterator;
 /**
  *
  * @author Zachary Stewart
+ * April 25, 2011
+ *
+ * This class has very little logic to it. Rather, it creates the PApplet and
+ * calls game methods and delegates events to the game class.
  */
 public class Main extends PApplet {
     public Game game;
@@ -19,13 +23,11 @@ public class Main extends PApplet {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
         PApplet.main(new String[] {"asteroids.Main"});
     }
 
     @Override
     public void setup() {
-//        frameRate(60);
         smooth();
         game = new Game(this);
         size(800, 600);
@@ -45,10 +47,6 @@ public class Main extends PApplet {
     @Override
     public void keyReleased(KeyEvent e) {
         game.control("keyUp", e);
-    }
-
-    public void actionPerformed(ActionEvent ae) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

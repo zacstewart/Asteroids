@@ -98,6 +98,8 @@ class Nuke extends SpaceThing {
     @Override
     public void update() {
         distance += speed;
+        // Whoa. Asteroid target tracking! Actually not the great. Just adjusts
+        // direction to the average of direction and the asteroid location tangent.
         direction = ((PApplet.degrees(PApplet.atan2(
                 locationY - getDestinationY(),
                 locationX - getDestinationX()
@@ -108,6 +110,11 @@ class Nuke extends SpaceThing {
 
     }
 
+    /**
+     * The follow two methods return the coordinates for Nuke target,
+     * whether space or Asteroid
+     * @return
+     */
     public float getDestinationX() {
         if(target instanceof SpaceThing) {
             return (float) target.getBounds().getCenterX();
@@ -123,6 +130,11 @@ class Nuke extends SpaceThing {
             return destinationY;
         }
     }
+
+    /**
+     * how far the missile has traveled.
+     * @return
+     */
 
     public float getDistance() {
         return distance;

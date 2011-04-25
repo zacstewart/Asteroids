@@ -16,7 +16,9 @@ import processing.core.PApplet;
 
 /**
  *
- * This class will be used to create, update and monitor all game objects
+ * This class is the logic center of the game. It controls the object list
+ * handling all operations such as adding/destroying objects, monitoring collisions,
+ * etc.
  */
 class Game {
     private PApplet canvas;
@@ -35,6 +37,7 @@ class Game {
     private int shipsRemaining;
     private int bulletsActive;
     private int powerUps;
+    // These constants make switches much nicer
     final int SHIP = 1;
     final int ASTEROID = 2;
     final int BULLET = 3;
@@ -55,6 +58,9 @@ class Game {
         gameState = MENU;
     }
 
+    /**
+     * Resets all object lists, scores, etc and inits level 1.
+     */
     public void newGame() {
         spaceThings = new LinkedList();
         createables = new LinkedList();
@@ -127,6 +133,9 @@ class Game {
         }
     }
 
+    /**
+     * This is drawn while gamestate is MENU. Controls, enter to play, etc.
+     */
     public void drawMenu() {
         canvas.textAlign(PApplet.CENTER);
         canvas.text("BAD ASTEROIDS", canvas.width/2, 40);
@@ -146,14 +155,22 @@ class Game {
 
     }
 
+    /**
+     * :( Score, go back to main menu.
+     */
     public void drawGameOver() {
         canvas.textAlign(PApplet.CENTER);
         canvas.text("GAME OVER", canvas.width/2, 40);
 
-        canvas.text("Insert Coins to Continue", canvas.width/2, 60);
-        canvas.text("Or Press Enter", canvas.width/2, 75);
+        canvas.text("Score: " + score, canvas.width/2, 60);
+
+        canvas.text("Insert Coins to Continue", canvas.width/2, 80);
+        canvas.text("Or Press Enter", canvas.width/2, 95);
     }
 
+    /**
+     * Displays game info like score, ships remaining, etc
+     */
     public void drawHud() {
         canvas.stroke(255);
         canvas.fill(255);
@@ -318,8 +335,8 @@ class Game {
 
 
     /**
-     * Key monitor. Maps directional and space keys to corresponding ship
-     * methods.
+     * Key monitor. Maps keys and space keys to corresponding ship
+     * methods or game methods depending on gameState.
      * @param type
      * @param e
      */
@@ -382,6 +399,11 @@ class Game {
         }
     }
 
+
+    /**
+     * Mouse click monitor. Targets and fires nukes. Protip: click an asteroid
+     * and it tracks the asteroid. Click space and it just blows up on that point.
+     */
     public void mouseControl() {
         switch(gameState) {
             case PLAYING: {

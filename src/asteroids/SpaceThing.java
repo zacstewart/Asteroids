@@ -29,23 +29,48 @@ abstract class SpaceThing {
     protected final int PLAYING = 1;
     protected final int GAMEOVER = 2;
 
+    /**
+     * Set the game canvas for all subclasses
+     * @param papp
+     */
     public SpaceThing(PApplet papp) {
         canvas = papp;
     }
 
+    /**
+     * This is the amount this SpaceThingw will move along the x-axis each frame
+     * @return
+     */
     public float deltaX() {
         return (PApplet.cos(PApplet.radians(direction-90)) * speed);
     }
 
+    /**
+     * this is the ammount it will move along the y-axis each frame.
+     * @return
+     */
     public float deltaY() {
         return (PApplet.sin(PApplet.radians(direction-90)) * speed);
     }
 
+    /**
+     * most objects have their own draw method for their own shape.
+     * I suppose i could have just had each object model itself and get drawn here,
+     * but time constraints. Keeping track of frames is useful though. drawGhost
+     * is for debugging collisions.
+     */
     public void draw() {
 //        drawGhost();
         frame += 1;
     }
 
+
+    /**
+     * This is to keep up with the x and y location of the object.
+     * Some things (asteroids) have their own update methods due to the way
+     * awt  polygons work, but this is still general enough to be useful to all
+     * subclasses.
+     */
     public void update() {
         if(bounds.getMinX() > canvas.width) {
             locationX = (float) 0.0;
@@ -66,10 +91,10 @@ abstract class SpaceThing {
     }
 
     /**
-     * Initiate a collision between this and other
+     * Initiate a collision between this and other. decides the outcome of a collision.
+     * Rock paper scissors logic.
      * @param other
      */
-
     public void collide(SpaceThing other) {
         if (this instanceof Asteroid && other instanceof Ship) {
             ((Ship) other).explode();
@@ -85,14 +110,25 @@ abstract class SpaceThing {
         }
     }
 
+    /**
+     * Every object can explode. Some more gloriously than others.
+     */
     public void explode() {
         explode = true;
     }
 
+    /**
+     * This sets remove to true, which causes this object to be removed from the
+     * object list in the game class drawObjets method.
+     */
     public void remove() {
         remove = true;
     }
 
+    /**
+     * Draws the bounding box. These are how collisions are detected. One
+     * bounding box intersects another.
+     */
     protected void drawGhost() {
         canvas.stroke(150,150,255);
         canvas.noFill();
@@ -100,6 +136,10 @@ abstract class SpaceThing {
                 (float) bounds.getWidth(), (float) bounds.getHeight());
     }
 
+    /**
+     * returns this objects bounds.
+     * @return
+     */
     public Rectangle2D getBounds() {
         return bounds;
     }
