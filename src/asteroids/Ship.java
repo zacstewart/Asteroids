@@ -122,7 +122,7 @@ class Ship extends SpaceThing {
     }
 
     public void fireNuke() {
-        if(nukes > 1) {
+        if(nukes > 0) {
             createable = new SpaceThing[1];
             createable[0] = new Nuke(canvas, locationX+12*shipSin(), locationY-12*shipCos(), direction, canvas.mouseX, canvas.mouseY);
             nukes -= 1;

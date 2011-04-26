@@ -18,7 +18,7 @@ public class Asteroid extends SpaceThing {
     Random rand = new Random();
     Polygon poly;
 
-    public Asteroid(PApplet papp, float initX, float initY, int initGeneration) {
+    public Asteroid(PApplet papp, float speed, float initX, float initY, int initGeneration) {
         super(papp);
         locationX = initX;
         locationY = initY;
@@ -26,7 +26,7 @@ public class Asteroid extends SpaceThing {
         init();
     }
     
-    public Asteroid(PApplet papp) {
+    public Asteroid(PApplet papp, float speed) {
         super(papp);
         generation = 3;
         locationX = (float) rand.nextInt(canvas.width);
@@ -145,6 +145,7 @@ public class Asteroid extends SpaceThing {
             for(int i=0; i<createable.length; i++) {
                 createable[i] = new Asteroid(
                         canvas,
+                        speed,
                         (float) bounds.getCenterX(),
                         (float) bounds.getCenterY(),
                         generation-1);

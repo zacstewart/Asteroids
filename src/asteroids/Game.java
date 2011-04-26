@@ -101,7 +101,7 @@ class Game {
                 li.add(new Ship(canvas));
                 break;
             case ASTEROID:
-                li.add(new Asteroid(canvas));
+                li.add(new Asteroid(canvas, 1+level));
                 break;
         }
     }
